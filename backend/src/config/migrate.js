@@ -84,14 +84,14 @@ const runMigrations = async () => {
   try {
     // Bootstrap the tracking table — idempotent, safe to run every time
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS migrations (
+      CREATE TABLE IF NOT EXISTS _schema_migrations (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
         executed_at TIMESTAMP DEFAULT NOW()
       )
     `);
 
-    const { rows: executed } = await pool.query('SELECT name FROM migrations');
+    const { rows: executed } = await pool.query('SELECT name FROM _schema_migrations');
     const executedNames = executed.map(r => r.name);
 
     const files = fs.readdirSync(migrationsDir)
@@ -121,7 +121,7 @@ const runMigrations = async () => {
       }
 
       // Tracking row inserted only after ALL statements in the file succeed
-      await pool.query('INSERT INTO migrations (name) VALUES ($1)', [file]);
+      await pool.query('INSERT INTO _schema_migrations (name) VALUES ($1)', [file]);
       console.log(`✅ ${file} completed`);
       migrationsRun++;
     }

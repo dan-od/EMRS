@@ -1052,22 +1052,6 @@ CREATE TABLE public.maintenance_schedule (
     accounts_recorded_by uuid
 );
 
-CREATE TABLE  IF NOT EXISTS public.migrations (
-    id integer NOT NULL,
-    name character varying(255) NOT NULL,
-    executed_at timestamp without time zone DEFAULT now()
-);
-
-CREATE SEQUENCE IF NOT EXISTS public.migrations_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.migrations_id_seq OWNED BY public.migrations.id;
-
 CREATE TABLE public.notifications (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
@@ -1406,8 +1390,6 @@ ALTER TABLE ONLY public.equipment_general_log ALTER COLUMN id SET DEFAULT nextva
 
 ALTER TABLE ONLY public.equipment_maintenance_log ALTER COLUMN id SET DEFAULT nextval('public.equipment_maintenance_log_id_seq'::regclass);
 
-ALTER TABLE ONLY public.migrations ALTER COLUMN id SET DEFAULT nextval('public.migrations_id_seq'::regclass);
-
 ALTER TABLE ONLY public.activity_logs
     ADD CONSTRAINT activity_logs_pkey PRIMARY KEY (id);
 
@@ -1509,12 +1491,6 @@ ALTER TABLE ONLY public.maintenance_parts
 
 ALTER TABLE ONLY public.maintenance_schedule
     ADD CONSTRAINT maintenance_schedule_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY public.migrations
-    ADD CONSTRAINT migrations_name_key UNIQUE (name);
-
-ALTER TABLE ONLY public.migrations
-    ADD CONSTRAINT migrations_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY public.notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
