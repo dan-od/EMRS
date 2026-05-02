@@ -1,0 +1,246 @@
+/* ========================================
+   Dark Mode Specific Overrides
+   ======================================== */
+
+/* === BASE BACKGROUNDS === */
+.dark .bg-white {
+  background-color: var(--color-surface) !important;
+}
+
+.dark .bg-gray-50,
+.dark .bg-slate-50 {
+  background-color: var(--color-card) !important;
+}
+
+.dark .bg-gray-100,
+.dark .bg-slate-100 {
+  background-color: var(--color-border) !important;
+}
+
+/* === BORDERS === */
+.dark .border-gray-50,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: var(--color-border) !important;
+}
+
+/* === TEXT COLORS === */
+.dark .text-gray-400 {
+  color: var(--color-text-muted) !important;
+}
+
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-slate-500,
+.dark .text-slate-600 {
+  color: var(--color-text-secondary) !important;
+}
+
+.dark .text-gray-700,
+.dark .text-gray-800,
+.dark .text-gray-900,
+.dark .text-slate-700,
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-text-primary {
+  color: var(--color-text) !important;
+}
+
+.dark .text-text-secondary {
+  color: var(--color-text-secondary) !important;
+}
+
+.dark .text-text-muted {
+  color: var(--color-text-muted) !important;
+}
+
+/* === CARDS & CONTAINERS === */
+.dark [class*="rounded-xl"][class*="bg-white"],
+.dark [class*="rounded-lg"][class*="bg-white"],
+.dark [class*="shadow-card"],
+.dark .card {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* Stat cards with colored backgrounds - preserve colors but darken */
+.dark .bg-primary-50 { background-color: rgba(255, 107, 0, 0.15) !important; }
+.dark .bg-green-50 { background-color: rgba(34, 197, 94, 0.15) !important; }
+.dark .bg-yellow-50 { background-color: rgba(234, 179, 8, 0.15) !important; }
+.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
+.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
+.dark .bg-purple-50 { background-color: rgba(168, 85, 247, 0.15) !important; }
+.dark .bg-orange-50 { background-color: rgba(249, 115, 22, 0.15) !important; }
+.dark .bg-teal-50 { background-color: rgba(20, 184, 166, 0.15) !important; }
+.dark .bg-cyan-50 { background-color: rgba(6, 182, 212, 0.15) !important; }
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.15) !important; }
+
+/* === TABLES === */
+.dark table,
+.dark thead,
+.dark tbody {
+  background-color: var(--color-surface) !important;
+}
+
+.dark th {
+  background-color: var(--color-card) !important;
+  color: var(--color-text) !important;
+  border-color: var(--color-border) !important;
+}
+
+.dark td {
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+.dark tr:hover {
+  background-color: var(--color-card) !important;
+}
+
+.dark tbody tr {
+  border-color: var(--color-border) !important;
+}
+
+/* === FILTER BUTTONS & PILLS === */
+.dark [class*="rounded-full"][class*="bg-white"],
+.dark button[class*="bg-white"] {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+/* Active filter state */
+.dark [class*="bg-primary-500"],
+.dark [class*="bg-primary-600"] {
+  background-color: #FF6B00 !important;
+}
+
+/* === HOVER STATES === */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: var(--color-card) !important;
+}
+
+.dark .hover\:shadow-md:hover,
+.dark .hover\:shadow-lg:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .hover\:border-gray-200:hover {
+  border-color: var(--color-border) !important;
+}
+
+/* === EMPTY STATES === */
+.dark [class*="text-gray-400"] svg,
+.dark [class*="text-gray-500"] svg {
+  color: var(--color-text-muted) !important;
+}
+
+/* === ALERTS & NOTICES === */
+.dark .bg-amber-50,
+.dark .bg-warning-50 {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark .bg-green-100 {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.dark .bg-yellow-100 {
+  background-color: rgba(234, 179, 8, 0.2) !important;
+}
+
+/* === BADGES (preserve colored backgrounds but adjust) === */
+.dark .bg-green-100.text-green-700,
+.dark .bg-green-100.text-green-800 {
+  background-color: rgba(34, 197, 94, 0.25) !important;
+  color: #86efac !important;
+}
+
+.dark .bg-yellow-100.text-yellow-700,
+.dark .bg-yellow-100.text-yellow-800 {
+  background-color: rgba(234, 179, 8, 0.25) !important;
+  color: #fde047 !important;
+}
+
+.dark .bg-red-100.text-red-700,
+.dark .bg-red-100.text-red-800 {
+  background-color: rgba(239, 68, 68, 0.25) !important;
+  color: #fca5a5 !important;
+}
+
+.dark .bg-blue-100.text-blue-700,
+.dark .bg-blue-100.text-blue-800 {
+  background-color: rgba(59, 130, 246, 0.25) !important;
+  color: #93c5fd !important;
+}
+
+.dark .bg-purple-100.text-purple-700,
+.dark .bg-purple-100.text-purple-800 {
+  background-color: rgba(168, 85, 247, 0.25) !important;
+  color: #d8b4fe !important;
+}
+
+.dark .bg-teal-100.text-teal-700,
+.dark .bg-teal-100.text-teal-800 {
+  background-color: rgba(20, 184, 166, 0.25) !important;
+  color: #5eead4 !important;
+}
+
+.dark .bg-orange-100.text-orange-700,
+.dark .bg-orange-100.text-orange-800 {
+  background-color: rgba(249, 115, 22, 0.25) !important;
+  color: #fdba74 !important;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-border-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--color-border);
+}
+
+/* === DIVIDERS === */
+.dark hr,
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--color-border) !important;
+}
+
+/* === RING/FOCUS STATES === */
+.dark .ring-gray-200,
+.dark .ring-gray-300 {
+  --tw-ring-color: var(--color-border) !important;
+}
+
+.dark .focus\:ring-offset-2:focus {
+  --tw-ring-offset-color: var(--color-surface) !important;
+}

@@ -1,0 +1,96 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  input, select, textarea { font-size: 1rem !important; }
+}
+
+/* Import modular partials */
+@import './partials/_variables.css';
+@import './partials/_forms.css';
+@import './partials/_components.css';
+@import './partials/_dark-mode.css';
+@import './partials/_dark-mode-ios.css';
+
+/* ========================================
+   Base Styles
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-spin { animation: spin 1s linear infinite; }
+.toast-enter { animation: slideIn 0.3s ease-out; }
+.fade-in { animation: fadeIn 0.2s ease-out; }
+.animate-fadeIn { animation: fadeIn 0.50s ease-out; }
+.animate-slideUp { animation: slideUp 0.4s ease-out both; }
+
+/* ========================================
+   Safe Area Utilities (notches, gesture bars)
+   ======================================== */
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-left { padding-left: env(safe-area-inset-left, 0px); }
+.safe-right { padding-right: env(safe-area-inset-right, 0px); }
+.safe-x { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.safe-y { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Mobile touch targets - minimum 44px per Apple HIG */
+.touch-target { min-height: 44px; min-width: 44px; }
+
+/* Horizontal scroll container for tables/filters on mobile */
+.mobile-scroll-x {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.mobile-scroll-x::-webkit-scrollbar { display: none; }
+
+/* Bottom sheet animation for mobile modals */
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-sheet { animation: slideUpSheet 0.3s ease-out; }

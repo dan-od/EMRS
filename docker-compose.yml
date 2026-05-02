@@ -1,0 +1,70 @@
+name: emrs
+
+services:
+
+  emrs-postgres:
+    image: postgres:15-alpine
+    container_name: emrs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB:       ${DB_NAME}
+    volumes:
+      - emrs_postgres_data:/var/lib/postgresql/data
+    networks:
+      - emrs-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  emrs-backend:
+    build:
+      context: ./backend
+    container_name: emrs-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST:    emrs-postgres
+      DB_PORT:    5432
+      NODE_ENV:   production
+    depends_on:
+      emrs-postgres:
+        condition: service_healthy
+    networks:
+      - emrs-network
+
+  emrs-frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL:    ${VITE_API_URL}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    container_name: emrs-frontend
+    restart: unless-stopped
+    networks:
+      - emrs-network
+
+  emrs-nginx:
+    image: nginx:alpine
+    container_name: emrs-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - emrs-backend
+      - emrs-frontend
+    networks:
+      - emrs-network
+      - web
+
+networks:
+  emrs-network:
+    driver: bridge
+  web:
+    external: true
+
+volumes:
+  emrs_postgres_data:

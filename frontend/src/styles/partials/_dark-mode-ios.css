@@ -1,0 +1,307 @@
+/* ========================================
+   iOS-Style Dark Mode Overrides
+   Glass morphism + subtle colors
+   ======================================== */
+
+/* === BASE BACKGROUNDS - Glass style === */
+.dark .bg-white {
+  background-color: rgba(30, 30, 35, 0.95) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.dark .bg-gray-50,
+.dark .bg-slate-50 {
+  background-color: rgba(38, 38, 44, 0.95) !important;
+}
+
+.dark .bg-gray-100,
+.dark .bg-slate-100 {
+  background-color: rgba(50, 50, 58, 0.95) !important;
+}
+
+/* === BORDERS - Subtle glass borders === */
+.dark .border-gray-50,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* === TEXT COLORS === */
+.dark .text-gray-400 {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-slate-500,
+.dark .text-slate-600 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.dark .text-gray-700,
+.dark .text-gray-800,
+.dark .text-gray-900,
+.dark .text-slate-700,
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-text-primary {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* === COLORED BACKGROUNDS - iOS Glass Colors === */
+/* Primary/Orange */
+.dark .bg-primary-50,
+.dark .bg-orange-50 { 
+  background-color: rgba(255, 107, 0, 0.12) !important;
+  border-color: rgba(255, 107, 0, 0.2) !important;
+}
+.dark .bg-primary-100,
+.dark .bg-orange-100 { 
+  background-color: rgba(255, 107, 0, 0.18) !important; 
+}
+
+/* Green */
+.dark .bg-green-50 { 
+  background-color: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.2) !important;
+}
+.dark .bg-green-100 { 
+  background-color: rgba(34, 197, 94, 0.18) !important; 
+}
+
+/* Yellow */
+.dark .bg-yellow-50 { 
+  background-color: rgba(234, 179, 8, 0.12) !important;
+  border-color: rgba(234, 179, 8, 0.2) !important;
+}
+.dark .bg-yellow-100 { 
+  background-color: rgba(234, 179, 8, 0.18) !important; 
+}
+
+/* Red */
+.dark .bg-red-50 { 
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+.dark .bg-red-100 { 
+  background-color: rgba(239, 68, 68, 0.18) !important; 
+}
+
+/* Blue */
+.dark .bg-blue-50 { 
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+.dark .bg-blue-100 { 
+  background-color: rgba(59, 130, 246, 0.18) !important; 
+}
+
+/* Purple */
+.dark .bg-purple-50 { 
+  background-color: rgba(168, 85, 247, 0.12) !important;
+  border-color: rgba(168, 85, 247, 0.2) !important;
+}
+.dark .bg-purple-100 { 
+  background-color: rgba(168, 85, 247, 0.18) !important; 
+}
+
+/* Teal */
+.dark .bg-teal-50 { 
+  background-color: rgba(20, 184, 166, 0.12) !important; 
+}
+.dark .bg-teal-100 { 
+  background-color: rgba(20, 184, 166, 0.18) !important; 
+}
+
+/* Cyan */
+.dark .bg-cyan-50 { 
+  background-color: rgba(6, 182, 212, 0.12) !important; 
+}
+.dark .bg-cyan-100 { 
+  background-color: rgba(6, 182, 212, 0.18) !important; 
+}
+
+/* Amber */
+.dark .bg-amber-50 { 
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+.dark .bg-amber-100 { 
+  background-color: rgba(245, 158, 11, 0.18) !important; 
+}
+
+/* === TEXT COLORS FOR COLORED BGs (Brighter in dark) === */
+.dark .text-green-600,
+.dark .text-green-700 { color: #4ade80 !important; }
+
+.dark .text-yellow-600,
+.dark .text-yellow-700 { color: #fbbf24 !important; }
+
+.dark .text-red-600,
+.dark .text-red-700 { color: #f87171 !important; }
+
+.dark .text-blue-600,
+.dark .text-blue-700 { color: #60a5fa !important; }
+
+.dark .text-purple-600,
+.dark .text-purple-700 { color: #c084fc !important; }
+
+.dark .text-orange-600,
+.dark .text-orange-700 { color: #fb923c !important; }
+
+.dark .text-amber-600,
+.dark .text-amber-700 { color: #fbbf24 !important; }
+
+/* === HOVER STATES === */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* === TABLES === */
+.dark table thead {
+  background-color: rgba(38, 38, 44, 0.95) !important;
+}
+
+.dark table tbody tr {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* === SCROLLBAR - iOS style === */
+/* Global scrollbar for all elements */
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar,
+.dark *::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.dark ::-webkit-scrollbar-track,
+.dark *::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 4px !important;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+.dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-radius: 4px !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
+}
+
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.25) rgba(255, 255, 255, 0.08);
+}
+
+/* Hide scrollbar for filter tabs */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* === INPUTS & FORMS - Glass style === */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: rgba(30, 30, 35, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: rgba(255, 107, 0, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.15) !important;
+}
+
+/* === MODALS - Glass style === */
+.dark [role="dialog"],
+.dark .modal-content,
+.dark .fixed.inset-0 + .fixed .rounded-2xl,
+.dark .z-50 .rounded-2xl {
+  background-color: rgba(26, 31, 38, 0.98) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Modal inner content override */
+.dark .z-50 .rounded-2xl .bg-white {
+  background-color: transparent !important;
+}
+
+/* Modal header border */
+.dark .z-50 .border-b.border-gray-100 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* === DROPDOWNS - Glass style === */
+.dark [role="listbox"],
+.dark [role="menu"],
+.dark .dropdown-menu {
+  background-color: rgba(38, 38, 44, 0.98) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* === SHADOWS - Softer in dark mode === */
+.dark .shadow-sm,
+.dark .shadow,
+.dark .shadow-md,
+.dark .shadow-lg {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* === DIVIDERS === */
+.dark hr,
+.dark .divide-gray-100 > * + *,
+.dark .divide-gray-200 > * + * {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}

@@ -1,0 +1,33 @@
+name: Deploy to homelab
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-emrs
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key:      ${{ secrets.SSH_KEY }}
+          port:     ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd /opt/emrs
+            git fetch --all
+            git reset --hard origin/main
+            docker compose build
+            docker compose up -d
+            docker compose ps

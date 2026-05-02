@@ -1,0 +1,75 @@
+/* ========================================
+   CSS Variables - Light Mode (Default)
+   ======================================== */
+:root {
+  --color-primary: #FF6B00;
+  --color-primary-dark: #E65100;
+  --color-primary-light: #ff8533;
+  --color-secondary: #8B4513;
+  --color-secondary-light: #a65d2e;
+  --color-background: #F5F7FA;
+  --color-surface: #FFFFFF;
+  --color-card: #FFFFFF;
+  --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
+  --color-text: #2C3E50;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-success: #2ECC71;
+  --color-warning: #F1C40F;
+  --color-error: #E74C3C;
+  --color-info: #3498DB;
+  
+  /* Form elements */
+  --input-bg: #FFFFFF;
+  --input-border: #d1d5db;
+  --input-focus-border: #FF6B00;
+  --input-focus-ring: rgba(255, 107, 0, 0.2);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Accent color for native elements */
+  accent-color: #8B4513;
+}
+
+/* ========================================
+   CSS Variables - Dark Mode
+   ======================================== */
+.dark {
+  --color-primary: #FF6B00;
+  --color-primary-dark: #ff8533;
+  --color-primary-light: #ffa366;
+  --color-secondary: #b78d6f;
+  --color-secondary-light: #d4b8a6;
+  --color-background: #0f1419;
+  --color-surface: #1a1f26;
+  --color-card: #242b33;
+  --color-border: #2f3943;
+  --color-border-light: #3a444f;
+  --color-text: #e7e9ea;
+  --color-text-secondary: #8899a6;
+  --color-text-muted: #657786;
+  --color-success: #34d058;
+  --color-warning: #f0b429;
+  --color-error: #f85149;
+  --color-info: #58a6ff;
+  
+  /* Form elements */
+  --input-bg: #1a1f26;
+  --input-border: #2f3943;
+  --input-focus-border: #FF6B00;
+  --input-focus-ring: rgba(255, 107, 0, 0.3);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238899a6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  
+  accent-color: #FF6B00;
+  color-scheme: dark;
+}
