@@ -1,8 +1,9 @@
-name: Deploy to homelab
+name: Deploy
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-emrs
@@ -10,24 +11,76 @@ concurrency:
 
 jobs:
   deploy:
-    name: SSH deploy
+    name: Deploy to Homelab
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
         with:
-          host:     ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key:      ${{ secrets.SSH_KEY }}
-          port:     ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            set -euo pipefail
-            cd /opt/emrs
-            git fetch --all
-            git reset --hard origin/main
-            docker compose build
-            docker compose up -d
-            docker compose ps
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Install rsync
+        run: sudo apt-get install -y rsync
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.HOMELAB_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Sync project files
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude '.env' \
+            --exclude 'node_modules' \
+            --exclude '.github' \
+            --exclude 'backups' \
+            --exclude 'archives' \
+            ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.HOMELAB_HOST }}:${{ secrets.DEPLOY_PATH }}
+
+      - name: Generate .env on server
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.HOMELAB_HOST }} "cat > ${{ secrets.DEPLOY_PATH }}/.env << EOF
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          NODE_ENV=production
+          PORT=5000
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_EXPIRES_IN=1h
+          JWT_REFRESH_EXPIRES_IN=7d
+          FRONTEND_URL=https://emrs.okoro.me
+          VITE_API_URL=https://emrs.okoro.me/api
+          VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          EMAIL_HOST=${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT=${{ secrets.EMAIL_PORT }}
+          EMAIL_USER=${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_FROM=noreply@wellfluid.com
+          SMS_ENABLED=false
+          TERMII_API_KEY=${{ secrets.TERMII_API_KEY }}
+          TERMII_SENDER_ID=WellFluid
+          EOF"
+
+      - name: Build and start containers
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.HOMELAB_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH }} && docker compose build && docker compose up -d && docker image prune -f"
+
+      - name: Run migrations
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.HOMELAB_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH }} && docker compose exec -T emrs-backend node src/config/migrate.js"
+
+      - name: Health check
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.HOMELAB_HOST }} \
+            "docker exec cloudflared wget -qO- http://emrs-nginx/api/health || exit 1"
