@@ -1052,7 +1052,7 @@ CREATE TABLE public.maintenance_schedule (
     accounts_recorded_by uuid
 );
 
-CREATE TABLE public.migrations (
+CREATE TABLE  IF NOT EXISTS public.migrations (
     id integer NOT NULL,
     name character varying(255) NOT NULL,
     executed_at timestamp without time zone DEFAULT now()
