@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "migrate": "node src/config/migrate.js",
     "seed": "node src/config/seed.js",
-    "lint": "eslint src seeds server.js --ext js"
+    "lint": "eslint src seeds server.js --ext js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "eslint": "^8.57.1",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "vitest": "^4.1.10"
   }
 }
