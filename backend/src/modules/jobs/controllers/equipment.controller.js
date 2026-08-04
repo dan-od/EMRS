@@ -1,8 +1,8 @@
 /**
  * Jobs Controller - Equipment Items (Enhanced)
  *
- * Logging note: disburseItem / startSourcing / itemArrived / returnItem
- * deliberately do NOT log here. equipment.service already logs each of those
+ * Logging note: disburseItem / startSourcing / itemArrived / returnItem /
+ * disburseArrived deliberately do NOT log here. equipment.service logs each
  * operations internally, and doing it in both places wrote two activity_log
  * rows per event with two different shapes and action names. Service-level
  * logging is the one kept because it cannot be bypassed by another caller.
@@ -144,11 +144,8 @@ const itemArrived = async (req, res, next) => {
 
 const disburseArrived = async (req, res, next) => {
   try {
+    // Activity logging lives in equipment.service.disburseArrived — see note at top.
     const item = await service.disburseArrived(req.params.itemId, req.user.id, req.body.notes);
-    await logAction(req, ACTIONS.ITEM_DISBURSED, item.job_id, item.job_number, {
-      jobNumber: item.job_number, itemId: item.id, itemName: item.requested_item_name,
-      source: 'ARRIVED', quantity: item.quantity, notes: req.body.notes
-    });
     res.json({ item, message: 'Disbursed successfully' });
   } catch (error) { next(error); }
 };

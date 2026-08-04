@@ -261,9 +261,11 @@ const disburseArrived = async (itemId, userId, notes) => {
         await logActivity({
           userId,
           action: 'ARRIVED_EQUIPMENT_DISBURSED',
-          resourceType: 'job_equipment_item',
-          resourceId: itemId,
+          entityType: ENTITY_TYPES.JOB,
+          entityId: item.job_id,
+          entityName: item.job_number,
           details: {
+            itemId,
             jobId: item.job_id,
             jobNumber: item.job_number,
             itemName: item.requested_item_name || item.client_equipment_name,
