@@ -1,6 +1,11 @@
 /**
  * Jobs Controller - Equipment Items (Enhanced)
- * Full logging for all actions
+ *
+ * Logging note: disburseItem / startSourcing / itemArrived / returnItem
+ * deliberately do NOT log here. equipment.service already logs each of those
+ * operations internally, and doing it in both places wrote two activity_log
+ * rows per event with two different shapes and action names. Service-level
+ * logging is the one kept because it cannot be bypassed by another caller.
  */
 const service = require('../services');
 const { query } = require('../../../config/db');
@@ -115,40 +120,24 @@ const removeItem = async (req, res, next) => {
 
 const disburseItem = async (req, res, next) => {
   try {
+    // Activity logging lives in equipment.service.disburseItem — see note at top.
     const item = await service.disburseItem(req.params.itemId, req.user.id, req.body.notes);
-    await logAction(req, ACTIONS.ITEM_DISBURSED, item.job_id, item.job_number, {
-      jobNumber: item.job_number, itemId: item.id,
-      itemName: item.equipment_name || item.requested_item_name,
-      itemType: item.item_type, serialNumber: item.serial_number,
-      quantity: item.quantity, notes: req.body.notes,
-      disbursedBy: { name: `${req.user.first_name} ${req.user.last_name}`, role: req.user.role }
-    });
     res.json({ item, message: 'Disbursed successfully' });
   } catch (error) { next(error); }
 };
 
 const startSourcing = async (req, res, next) => {
   try {
+    // Activity logging lives in equipment.service.startSourcing — see note at top.
     const item = await service.startSourcing(req.params.itemId, req.user.id, req.body.notes, req.body.estimated_arrival);
-    await logAction(req, ACTIONS.ITEM_SOURCING_STARTED, item.job_id, item.job_number, {
-      jobNumber: item.job_number, itemId: item.id, itemName: item.requested_item_name,
-      quantity: item.quantity, estimatedArrival: req.body.estimated_arrival, notes: req.body.notes,
-      sourcingBy: { name: `${req.user.first_name} ${req.user.last_name}`, role: req.user.role }
-    });
     res.json({ item, message: 'Sourcing started' });
   } catch (error) { next(error); }
 };
 
 const itemArrived = async (req, res, next) => {
   try {
+    // Activity logging lives in equipment.service.itemArrived — see note at top.
     const item = await service.itemArrived(req.params.itemId, req.user.id, req.body);
-    await logAction(req, ACTIONS.ITEM_ARRIVED, item.job_id, item.job_number, {
-      jobNumber: item.job_number, itemId: item.id, itemName: item.requested_item_name,
-      quantity: item.quantity, linkedInventoryId: req.body.linked_inventory_id,
-      vendor: req.body.vendor_name, poNumber: req.body.purchase_order_number,
-      cost: req.body.procurement_cost,
-      receivedBy: { name: `${req.user.first_name} ${req.user.last_name}`, role: req.user.role }
-    });
     res.json({ item, message: 'Item arrived and linked' });
   } catch (error) { next(error); }
 };
@@ -194,14 +183,8 @@ const supervisorReject = async (req, res, next) => {
 
 const returnItem = async (req, res, next) => {
   try {
+    // Activity logging lives in equipment.service.returnItem — see note at top.
     const item = await service.returnItem(req.params.itemId, req.body.status, req.user.id, req.body.condition, req.body.hours_used);
-    const jobInfo = await getJobInfo(item.job_id);
-    await logAction(req, ACTIONS.ITEM_RETURN_INITIATED, item.job_id, jobInfo.job_number, {
-      jobNumber: jobInfo.job_number, itemId: item.id,
-      itemName: item.equipment_name || item.requested_item_name,
-      serialNumber: item.serial_number, condition: req.body.condition, hoursUsed: req.body.hours_used,
-      initiatedBy: { name: `${req.user.first_name} ${req.user.last_name}`, role: req.user.role }
-    });
     res.json({ item, message: 'Return recorded' });
   } catch (error) { next(error); }
 };

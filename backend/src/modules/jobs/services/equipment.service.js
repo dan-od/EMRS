@@ -8,9 +8,11 @@ const logger = require('../../../utils/logger');
 
 // Activity logging
 let logActivity = async () => {};
+let ENTITY_TYPES = { JOB: 'JOB' };
 try {
-  const { logActivity: log } = require('../../../utils/activityLogger');
+  const { logActivity: log, ENTITY_TYPES: types } = require('../../../utils/activityLogger');
   logActivity = log;
+  ENTITY_TYPES = types;
 } catch (e) {
   logger.warn('Activity logging not available');
 }
@@ -118,9 +120,11 @@ const disburseItem = async (itemId, disbursedBy, notes) => {
       await logActivity({
         userId: disbursedBy,
         action: 'EQUIPMENT_DISBURSED',
-        resourceType: 'job_equipment_item',
-        resourceId: itemId,
+        entityType: ENTITY_TYPES.JOB,
+        entityId: item.job_id,
+        entityName: item.job_number,
         details: {
+          itemId,
           jobId: item.job_id,
           jobNumber: item.job_number,
           equipmentName: item.equipment_name || item.requested_item_name || item.client_equipment_name,
@@ -166,9 +170,11 @@ const startSourcing = async (itemId, userId, notes, estimatedArrival) => {
       await logActivity({
         userId,
         action: 'EQUIPMENT_SOURCING_STARTED',
-        resourceType: 'job_equipment_item',
-        resourceId: itemId,
+        entityType: ENTITY_TYPES.JOB,
+        entityId: item.job_id,
+        entityName: item.job_number,
         details: {
+          itemId,
           jobId: item.job_id,
           jobNumber: item.job_number,
           itemName: item.requested_item_name || item.client_equipment_name,
@@ -216,9 +222,11 @@ const itemArrived = async (itemId, userId, data) => {
       await logActivity({
         userId,
         action: 'EQUIPMENT_ARRIVED',
-        resourceType: 'job_equipment_item',
-        resourceId: itemId,
+        entityType: ENTITY_TYPES.JOB,
+        entityId: item.job_id,
+        entityName: item.job_number,
         details: {
+          itemId,
           jobId: item.job_id,
           jobNumber: item.job_number,
           itemName: item.requested_item_name || item.client_equipment_name,
@@ -362,9 +370,11 @@ const returnItem = async (itemId, status, returnedBy, condition, hoursUsed) => {
         await logActivity({
           userId: returnedBy,
           action: 'EQUIPMENT_RETURNED',
-          resourceType: 'job_equipment_item',
-          resourceId: itemId,
+          entityType: ENTITY_TYPES.JOB,
+          entityId: item.job_id,
+          entityName: item.job_number,
           details: {
+            itemId,
             jobId: item.job_id,
             jobNumber: item.job_number,
             equipmentName: item.equipment_name || item.requested_item_name,
