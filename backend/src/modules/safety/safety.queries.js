@@ -40,9 +40,13 @@ const create = `
   RETURNING *
 `;
 
+// $2 is cast explicitly for the assignment and left as text for the
+// comparison. Without the cast Postgres has to deduce one type for a
+// parameter used both as safety_status and against a text literal, and
+// fails the whole statement with "inconsistent types deduced for parameter $2".
 const updateStatus = `
-  UPDATE safety_reports SET 
-    status = $2, 
+  UPDATE safety_reports SET
+    status = $2::safety_status,
     assigned_to = $3,
     resolution = $4,
     resolved_at = CASE WHEN $2 = 'Resolved' THEN NOW() ELSE resolved_at END,
