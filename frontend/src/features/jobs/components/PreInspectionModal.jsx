@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Modal, Button } from '@/components/common';
-import { ClipboardCheck, CheckCircle, AlertTriangle, Wrench, ChevronDown, ChevronRight, Save } from 'lucide-react';
+import { ClipboardCheck, CheckCircle, XCircle, AlertTriangle, Wrench, ChevronDown, ChevronRight, Save } from 'lucide-react';
 import { useInspectionActions } from '../hooks';
 import { api } from '@/services/api';
 

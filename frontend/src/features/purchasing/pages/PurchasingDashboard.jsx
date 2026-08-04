@@ -209,7 +209,7 @@ const PurchasingDashboard = () => {
               </p>
               <PendingExtensionsPanel
                 extensions={extensions}
-                isLoading={extensionsLoading}
+                isLoading={allLoading}
                 role="purchasing"
                 onApprove={handleExtensionApprove}
                 onReject={handleExtensionReject}
@@ -220,7 +220,7 @@ const PurchasingDashboard = () => {
             /* Maintenance Tab Content - with full approval form */
             <MaintenanceApprovalPanel
               requests={maintenanceRequests}
-              isLoading={maintenanceLoading}
+              isLoading={allLoading}
               onApprovalComplete={refreshAllData}
             />
           ) : activeTab === 'disbursed' ? (
@@ -228,7 +228,7 @@ const PurchasingDashboard = () => {
             <DisbursedItemsPanel
               requests={disbursedRequests}
               maintenanceRequests={approvedMaintenanceRequests}
-              isLoading={disbursedLoading}
+              isLoading={allLoading}
             />
           ) : currentRequests === undefined ? (
             <ContentLoader />
