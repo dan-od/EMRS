@@ -12,8 +12,12 @@ router.use(authenticate);
 router.get('/my', controller.getMyReports);
 router.post('/', validate(validation.create), controller.create);
 
-// Safety department and managers can view all and manage
-const safetyRoles = ['Super_Admin', 'Admin', 'IT_Support', 'Safety_Manager', 'Safety_Officer', 'Operations_Manager'];
+// Safety department and managers can view all and manage.
+// Kept in sync with the frontend's SAFETY_ROLES (routes/routeRoles.js) and
+// SafetyHub's SAFETY_ADMIN_ROLES. IT_Support is deliberately absent: it holds
+// user-management permissions, not business data, and safety reports carry
+// incident and reporter details.
+const safetyRoles = ['Super_Admin', 'Admin', 'Safety_Manager', 'Safety_Officer', 'Operations_Manager'];
 
 router.get('/', requireRoles(safetyRoles), controller.getAll);
 router.get('/stats', requireRoles(safetyRoles), controller.getStats);
