@@ -7,12 +7,8 @@ import { Send, Check, X, Play, Flag, CheckCircle, Clipboard } from 'lucide-react
 import { useJobWorkflow } from '../hooks';
 import { RejectModal, SignoffModal, CancelModal } from './modals';
 import { MANAGER_ROLES } from '../constants';
+import { statusIs } from '../utils/jobStatus';
 
-// Helper for case-insensitive status check
-const statusIs = (status, ...values) => {
-  const s = (status || '').toUpperCase();
-  return values.some(v => v.toUpperCase() === s);
-};
 
 export const WorkflowActions = ({ job, userRole, userId, onRefresh }) => {
   const [modal, setModal] = useState(null);

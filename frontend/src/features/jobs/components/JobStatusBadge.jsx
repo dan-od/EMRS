@@ -1,7 +1,7 @@
 /**
  * JobStatusBadge - Displays job status with color
  */
-import { JOB_STATUS_CONFIG } from '../constants';
+import { getJobStatusConfig } from '../utils/jobStatus';
 
 const colors = {
   gray: 'bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300',
@@ -14,7 +14,7 @@ const colors = {
 };
 
 export const JobStatusBadge = ({ status, size = 'md' }) => {
-  const cfg = JOB_STATUS_CONFIG[status] || { label: status, color: 'gray' };
+  const cfg = getJobStatusConfig(status);
   const sz = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm';
   return <span className={`inline-flex items-center font-medium rounded-full ${colors[cfg.color]} ${sz}`}>{cfg.label}</span>;
 };
