@@ -3,14 +3,18 @@
  */
 import { Check } from 'lucide-react';
 import { STATUS_FLOW, JOB_STATUS_CONFIG } from '../constants';
+import { statusIs, resolveStatusKey } from '../utils/jobStatus';
 
 export const JobStatusTracker = ({ currentStatus }) => {
-  if (currentStatus === 'CANCELLED') {
+  if (statusIs(currentStatus, 'CANCELLED')) {
     return <div className="p-4 bg-red-50 dark:bg-red-500/10 rounded-lg text-center text-red-600 font-medium">Job Cancelled</div>;
   }
 
-  const idx = STATUS_FLOW.indexOf(currentStatus);
-  const pct = (idx / (STATUS_FLOW.length - 1)) * 100;
+  // STATUS_FLOW is keyed SCREAMING_SNAKE_CASE; the database stores TitleCase,
+  // so the raw status has to be resolved before indexing into it.
+  const idx = STATUS_FLOW.indexOf(resolveStatusKey(currentStatus));
+  // A status outside the flow (idx -1) must not drive the bar negative.
+  const pct = idx > 0 ? (idx / (STATUS_FLOW.length - 1)) * 100 : 0;
 
   return (
     <div className="relative">

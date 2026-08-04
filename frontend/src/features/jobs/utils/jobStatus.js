@@ -13,7 +13,9 @@ const normalize = (status) => (status || '').toUpperCase();
 // frontend's name for that same step and the only key the config carries.
 const ALIASES = { TEAM_ASSIGNED: 'PENDING_APPROVAL' };
 
-const resolveKey = (status) => {
+// Maps a stored status onto the key the frontend constants use, so callers
+// can index into JOB_STATUS_CONFIG or STATUS_FLOW without knowing about drift.
+export const resolveStatusKey = (status) => {
   const key = normalize(status);
   return ALIASES[key] || key;
 };
@@ -24,4 +26,4 @@ export const statusIs = (status, ...values) => {
 };
 
 export const getJobStatusConfig = (status) =>
-  JOB_STATUS_CONFIG[resolveKey(status)] || { label: status || 'Unknown', color: 'gray' };
+  JOB_STATUS_CONFIG[resolveStatusKey(status)] || { label: status || 'Unknown', color: 'gray' };
