@@ -20,8 +20,12 @@ const SafetyReportDetail = () => {
   const { report, isLoading, error, refresh } = useSafetyReport(id);
   const { updateStatus, isLoading: actionLoading } = useSafetyActions();
 
-  const isSafetyDept = user?.department_name === 'Safety';
-  const canUpdateStatus = isSafetyDept && report?.status !== 'Closed';
+  // The authenticated user object carries `department` (a plain string) —
+  // `department_name` exists nowhere, so the old check was always false.
+  const isSafetyDept = user?.department === 'Safety';
+  // Only render the section when a transition is actually offered below,
+  // otherwise Resolved/Closed reports show an empty "Update Status" block.
+  const canUpdateStatus = isSafetyDept && ['Open', 'In_Progress'].includes(report?.status);
 
   const handleStatusUpdate = async (status) => {
     try {
@@ -37,6 +41,9 @@ const SafetyReportDetail = () => {
   if (error || !report) return <EmptyState.ErrorState />;
 
   const severityColor = getSeverityColor(report.severity);
+  // The API returns this column as `type`; SafetyReportCard already carries
+  // the same fallback. Defaulting keeps the page from crashing outright.
+  const reportType = report.type || report.report_type || 'Safety';
 
   return (
     <PageWrapper
@@ -59,7 +66,7 @@ const SafetyReportDetail = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-text-primary">
-                    {report.report_type.replace('_', ' ')} Report
+                    {reportType.replace('_', ' ')} Report
                   </h2>
                   <p className="text-sm text-text-muted">ID: {report.id}</p>
                 </div>
@@ -119,7 +126,7 @@ const SafetyReportDetail = () => {
                   {report.status === 'In_Progress' && (
                     <Button
                       variant="success"
-                      onClick={() => handleStatusUpdate('Closed')}
+                      onClick={() => handleStatusUpdate('Resolved')}
                       loading={actionLoading}
                       className="w-full sm:w-auto"
                     >

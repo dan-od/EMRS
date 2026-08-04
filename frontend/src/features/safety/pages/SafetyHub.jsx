@@ -10,7 +10,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { Plus, AlertTriangle, AlertCircle, ShieldAlert, CheckCircle } from 'lucide-react';
 
 // Roles that can see ALL safety reports
-const SAFETY_ADMIN_ROLES = ['Admin', 'Super_Admin', 'Safety_Officer', 'Operations_Manager'];
+const SAFETY_ADMIN_ROLES = ['Admin', 'Super_Admin', 'Safety_Officer', 'Safety_Manager', 'Operations_Manager'];
 
 const SafetyHub = () => {
   const navigate = useNavigate();
