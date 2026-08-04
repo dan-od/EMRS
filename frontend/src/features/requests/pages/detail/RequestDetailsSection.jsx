@@ -5,6 +5,7 @@ import { Package, Wrench, CheckCircle, XCircle, Briefcase } from 'lucide-react';
 import { formatDate } from '@/utils/formatters';
 import { ItemApprovalSection } from '../../components';
 import { DetailRow } from './RequestInfo';
+import WorkOrderLink from './WorkOrderLink';
 
 const RequestDetailsSection = ({ request, showApprovalActions, approvedItems, setApprovedItems, actionLoading }) => {
   const details = request.details || {};
@@ -22,17 +23,8 @@ const RequestDetailsSection = ({ request, showApprovalActions, approvedItems, se
       {request.details && (
         <div className="bg-gray-50 dark:bg-[#0f1419] rounded-lg p-4 border border-gray-100 dark:border-white/10 space-y-4">
           
-          {/* Additional Request Info (Work Order link) */}
-          {isAdditionalRequest && details.workOrderId && (
-            <div className="pb-3 border-b border-gray-200 dark:border-dark-border">
-              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Additional Request for Work Order</p>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                {details.equipmentName && <span>{details.equipmentName} • </span>}
-                <span className="font-mono text-xs">#{details.workOrderId.slice(0, 8)}</span>
-              </p>
-              {details.notes && <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{details.notes}</p>}
-            </div>
-          )}
+          {/* Work Order link — standard Maintenance requests and additional requests alike */}
+          <WorkOrderLink details={details} />
 
           {/* Subject if present */}
           {details.subject && !isAdditionalRequest && (
@@ -169,7 +161,7 @@ const RequestDetailsSection = ({ request, showApprovalActions, approvedItems, se
           )}
 
           {/* Empty state if no content */}
-          {!hasMaterials && !hasTools && !hasItems && !details.vehicleType && !details.equipmentType && !details.issueDescription && !isAdditionalRequest && (
+          {!hasMaterials && !hasTools && !hasItems && !details.vehicleType && !details.equipmentType && !details.issueDescription && !isAdditionalRequest && !details.workOrderId && (
             <p className="text-sm text-gray-400 dark:text-gray-500 italic">No details available</p>
           )}
         </div>
