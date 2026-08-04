@@ -11,6 +11,7 @@
 require('dotenv').config();
 const { pool } = require('../src/config/db');
 const { clean } = require('./clean.seed');
+const { seedUsers, SEED_PASSWORD, SEED_EMAIL_DOMAIN } = require('./users.seed');
 const { seedSafety } = require('./safety.seed');
 const { seedMaintenance } = require('./maintenance.seed');
 const { seedJobs } = require('./jobs.seed');
@@ -22,13 +23,14 @@ const run = async () => {
   try {
     await client.query('BEGIN');
 
-    await clean(client);
+    const removed = await clean(client);
     if (cleanOnly) {
       await client.query('COMMIT');
-      console.log('🧹 Seeded rows removed.');
+      console.log(`🧹 Seeded rows removed. Users: ${removed.deleted} deleted, ${removed.deactivated} deactivated (had dependent rows).`);
       return;
     }
 
+    const users = await seedUsers(client);
     const safety = await seedSafety(client);
     const maintenance = await seedMaintenance(client);
     const jobs = await seedJobs(client);
@@ -36,6 +38,7 @@ const run = async () => {
     await client.query('COMMIT');
 
     console.log('🌱 Build Pass 1 seed complete');
+    console.log(`   e2e users       ${users} (password: ${SEED_PASSWORD}, domain: @${SEED_EMAIL_DOMAIN})`);
     console.log(`   safety_reports  ${safety} rows`);
     console.log(`   maintenance     ${maintenance} requests (3 with work orders)`);
     console.log(`   jobs            ${jobs.jobs} rows — ${jobs.statuses.join(', ')}`);

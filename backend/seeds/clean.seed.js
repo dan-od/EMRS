@@ -7,6 +7,36 @@
  * fails or silently orphans the child.
  */
 const { SEED_TAG, SEED_KEY, JOB_PREFIX } = require('./seedConfig');
+const { SEED_EMAIL_DOMAIN } = require('./users.seed');
+
+/**
+ * Removes the E2E users, falling back to deactivation.
+ *
+ * 84 tables reference users with ON DELETE NO ACTION, so any seed user that
+ * created a row during a test run cannot be deleted. Each delete gets its own
+ * savepoint: on a foreign-key violation the user is deactivated instead, which
+ * keeps them out of the app without aborting the whole clean.
+ */
+const cleanUsers = async (client) => {
+  const { rows } = await client.query(
+    'SELECT email FROM users WHERE email LIKE $1', [`%@${SEED_EMAIL_DOMAIN}`]
+  );
+  let deleted = 0, deactivated = 0;
+
+  for (const { email } of rows) {
+    await client.query('SAVEPOINT del_seed_user');
+    try {
+      await client.query('DELETE FROM users WHERE email = $1', [email]);
+      await client.query('RELEASE SAVEPOINT del_seed_user');
+      deleted++;
+    } catch {
+      await client.query('ROLLBACK TO SAVEPOINT del_seed_user');
+      await client.query('UPDATE users SET is_active = false WHERE email = $1', [email]);
+      deactivated++;
+    }
+  }
+  return { deleted, deactivated };
+};
 
 const clean = async (client) => {
   const seededJobs = `SELECT id FROM jobs WHERE job_number LIKE '${JOB_PREFIX}%'`;
@@ -29,7 +59,13 @@ const clean = async (client) => {
   await client.query(`DELETE FROM inspection_failed_items WHERE maintenance_request_id IN (${seededRequests})`);
   await client.query(`DELETE FROM requests WHERE details->>'seedTag' = $1`, [SEED_KEY]);
 
-  await client.query(`DELETE FROM safety_reports WHERE title LIKE $1`, [`${SEED_TAG}%`]);
+  // Contains, not prefix: CreateSafetyReport derives the title as
+  // "<Type> at <location>", so a report filed by the E2E suite carries the
+  // marker mid-string rather than at the front.
+  await client.query(`DELETE FROM safety_reports WHERE title LIKE $1`, [`%${SEED_TAG}%`]);
+
+  // Users last — their content has to be gone before they can be removed.
+  return cleanUsers(client);
 };
 
 module.exports = { clean };
