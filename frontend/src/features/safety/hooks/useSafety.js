@@ -39,7 +39,8 @@ export const useSafetyReport = (id) => {
   const { data, error, isLoading, refresh } = useApi(id ? SAFETY.BY_ID(id) : null);
   
   return {
-    report: data?.report,
+    // GET /safety/:id returns the report unwrapped — there is no envelope.
+    report: data,
     error,
     isLoading,
     refresh

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PageWrapper } from '@/components/layout';
 import { Card, Button } from '@/components/common';
-import { PageLoader, EmptyState } from '@/components/feedback';
+import { PageLoader, ErrorState } from '@/components/feedback';
 import { UserFormFields } from '../components';
 import { useUser, useUserActions } from '../hooks/useUsers';
 import { useUiStore } from '@/store/uiStore';
@@ -60,7 +60,7 @@ const EditUser = () => {
   };
 
   if (loadingUser) return <PageLoader />;
-  if (error || !user) return <EmptyState.ErrorState />;
+  if (error || !user) return <ErrorState />;
 
   return (
     <PageWrapper

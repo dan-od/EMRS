@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { PageWrapper, PageSection } from '@/components/layout';
 import { Card, CardContent, Badge, Button } from '@/components/common';
-import { PageLoader, EmptyState } from '@/components/feedback';
+import { PageLoader, ErrorState } from '@/components/feedback';
 import { useSafetyReport, useSafetyActions } from '../hooks/useSafety';
 import { useAuthStore } from '@/store/authStore';
 import { useUiStore } from '@/store/uiStore';
@@ -38,7 +38,7 @@ const SafetyReportDetail = () => {
   };
 
   if (isLoading) return <PageLoader />;
-  if (error || !report) return <EmptyState.ErrorState />;
+  if (error || !report) return <ErrorState />;
 
   const severityColor = getSeverityColor(report.severity);
   // The API returns this column as `type`; SafetyReportCard already carries

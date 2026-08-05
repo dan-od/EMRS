@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageWrapper } from '@/components/layout';
-import { PageLoader, EmptyState } from '@/components/feedback';
+import { PageLoader, EmptyState, ErrorState } from '@/components/feedback';
 import  UserStats  from '../components/UserStats';
 import { UserFilters } from '../components/UserFilters';
 import UserTable from '../components/UserTable';
@@ -22,7 +22,7 @@ const UserList = () => {
   const canCreate = ['Admin', 'Super_Admin', 'IT_Support'].includes(user?.role);
 
   if (isLoading) return <PageLoader />;
-  if (error) return <EmptyState.ErrorState onRetry={() => window.location.reload()} />;
+  if (error) return <ErrorState onRetry={() => window.location.reload()} />;
 
   return (
     <PageWrapper title="User Management">
