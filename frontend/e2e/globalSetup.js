@@ -8,6 +8,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,4 +47,12 @@ export default function globalSetup() {
   }
 
   console.log(`E2E preflight OK — database host is "${host}".`);
+
+  // Reset fixtures so every run starts from the same state. Specs consume
+  // seeded data — marking an In_Progress report Resolved, filing new reports —
+  // so without this a second run finds a different database than the first.
+  // The seed is additive and marker-scoped; it never truncates a table.
+  const backend = path.resolve(__dirname, '../../backend');
+  execFileSync(process.execPath, ['seeds/index.js'], { cwd: backend, stdio: 'pipe' });
+  console.log('E2E fixtures reseeded.');
 }

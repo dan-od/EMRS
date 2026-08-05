@@ -12,7 +12,8 @@ const getAll = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    const report = await safetyService.getById(req.params.id);
+    // canAccessReport has already loaded and authorised this report.
+    const report = req.safetyReport || (await safetyService.getById(req.params.id));
     if (!report) {
       return res.status(404).json({ message: 'Report not found' });
     }
