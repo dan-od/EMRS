@@ -5,7 +5,6 @@ import { Package, Wrench, CheckCircle, XCircle, Briefcase } from 'lucide-react';
 import { formatDate } from '@/utils/formatters';
 import { ItemApprovalSection } from '../../components';
 import { DetailRow } from './RequestInfo';
-import WorkOrderLink from './WorkOrderLink';
 
 const RequestDetailsSection = ({ request, showApprovalActions, approvedItems, setApprovedItems, actionLoading }) => {
   const details = request.details || {};
@@ -23,8 +22,6 @@ const RequestDetailsSection = ({ request, showApprovalActions, approvedItems, se
       {request.details && (
         <div className="bg-gray-50 dark:bg-[#0f1419] rounded-lg p-4 border border-gray-100 dark:border-white/10 space-y-4">
           
-          {/* Work Order link — standard Maintenance requests and additional requests alike */}
-          <WorkOrderLink details={details} />
 
           {/* Subject if present */}
           {details.subject && !isAdditionalRequest && (

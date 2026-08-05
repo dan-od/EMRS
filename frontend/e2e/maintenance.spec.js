@@ -10,14 +10,10 @@ import { storageStateFor, E2E_TAG } from './roles';
  */
 
 /**
- * KNOWN FAILURE — RequestDetail.jsx:224 branches on isMaintenance and renders
- * MaintenanceDetailsSection for Maintenance requests, so RequestDetailsSection
- * (where the work order link lives) is never mounted for this flow.
- * MaintenanceDetailsSection has no work-order reference at all.
- *
- * The Build Pass 1 fix is therefore only reachable for Jobs-module additional
- * requests, not the standard Maintenance request it was written for. Left
- * asserting the intended behaviour rather than relaxed to match the bug.
+ * Regression guard for E3-005. RequestDetail branches on isMaintenance and
+ * renders MaintenanceDetailsSection, so an earlier fix that lived inside
+ * RequestDetailsSection was never mounted for the flow it targeted.
+ * WorkOrderLink now renders above that branch, once, for both paths.
  */
 test.describe('Maintenance — work order link', () => {
   test.use({ storageState: storageStateFor('super_admin') });

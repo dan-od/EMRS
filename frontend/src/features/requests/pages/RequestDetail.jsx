@@ -16,9 +16,10 @@ import { ChevronLeft, AlertCircle, Wrench } from 'lucide-react';
 import { 
   StatusNotice, 
   RequestInfo, 
-  RequestDetailsSection, 
+  RequestDetailsSection,
   ApprovalHistory,
-  MaintenanceDetailsSection 
+  MaintenanceDetailsSection,
+  WorkOrderLink
 } from './detail';
 
 // --- Helper Functions ---
@@ -220,7 +221,15 @@ const RequestDetail = () => {
             <StatusNotice request={request} />
             <ReturnSection request={request} onUpdate={refresh} isOwner={user?.id === request.requester_id} />
             <RequestInfo request={request} />
-            
+
+            {/* Above the branch: a work order can be attached to either kind of
+                request, and only RequestDetailsSection used to render this — so
+                Maintenance requests, the main source of work orders, showed no
+                link at all. One render site rather than a copy per branch. */}
+            <div className="mt-4">
+              <WorkOrderLink details={request.details} />
+            </div>
+
             {isMaintenance ? (
               <div className="border-t border-gray-100 dark:border-white/10 pt-4 mt-4">
                 <h3 className="text-sm font-medium text-text-primary dark:text-white mb-4">Maintenance Details</h3>
