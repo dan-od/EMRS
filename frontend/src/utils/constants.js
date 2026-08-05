@@ -97,9 +97,13 @@ export const SEVERITY = {
   LOW: 'Low'
 };
 
+// Mirrors the safety_status enum in full. 'Resolved' was missing, so the
+// filter dropdown could not select the status "Mark Resolved" produces and
+// resolved reports were unreachable by filtering.
 export const SAFETY_STATUS = {
   OPEN: 'Open',
   IN_PROGRESS: 'In_Progress',
+  RESOLVED: 'Resolved',
   CLOSED: 'Closed'
 };
 
