@@ -1,5 +1,16 @@
 import { ROLES } from '@/utils/constants';
 
+/**
+ * Reference map of routes and intended access. NOTHING IMPORTS THIS FILE —
+ * the routes that actually render, and the guards that actually apply, live
+ * in routes/groups/*.jsx.
+ *
+ * That mattered: this file described /safety as roles: 'all' while
+ * safetyRoutes.jsx required SAFETY_ROLES, and because the guard is what runs,
+ * ordinary staff could not file an incident report. Treat this as
+ * documentation to keep in step, never as the source of truth.
+ */
+
 // Helper arrays for common role groups
 const ADMINS = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
 const MANAGERS = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.OPERATIONS_MANAGER, ROLES.MAINTENANCE_MANAGER];
@@ -39,14 +50,16 @@ export const routeConfig = {
       create: { path: 'create', roles: MANAGERS }
     }
   },
+  // Kept in step with routes/groups/safetyRoutes.jsx, which is what actually
+  // renders. The paths here previously described routes that do not exist
+  // (report/:type, my-reports, dashboard) while omitting the one that does.
   safety: {
     path: '/safety',
     roles: 'all',
     children: {
       hub: { path: '', roles: 'all' },
-      report: { path: 'report/:type', roles: 'all' },
-      myReports: { path: 'my-reports', roles: 'all' },
-      dashboard: { path: 'dashboard', roles: [...MANAGERS, ROLES.SAFETY_MANAGER, ROLES.SAFETY_OFFICER] },
+      create: { path: 'new', roles: 'all' },
+      // Authorisation is enforced server-side, by ownership or safety role.
       detail: { path: ':id', roles: 'all' }
     }
   },

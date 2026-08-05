@@ -86,14 +86,13 @@ test.describe('Safety — Field_Engineer', () => {
   test.use({ storageState: storageStateFor('field_engineer') });
 
   /**
-   * KNOWN FAILURE — routes/groups/safetyRoutes.jsx guards /safety, /safety/new
-   * and /safety/:id with SAFETY_ROLES, so ordinary staff are redirected to
-   * /unauthorized and cannot file an incident report at all.
+   * Regression guard for E3-015: safetyRoutes.jsx once gated /safety,
+   * /safety/new and /safety/:id behind SAFETY_ROLES, so ordinary staff were
+   * redirected to /unauthorized and could not file an incident report at all.
    *
-   * routeConfig.js declares the same routes as roles: 'all', and SafetyHub
-   * carries a whole "Showing your submitted reports" branch for non-admins,
-   * so the guard contradicts both. These tests assert the intended behaviour
-   * and are left failing deliberately rather than relaxed to match the bug.
+   * The /unauthorized assertions below are what fail first if a role gate is
+   * ever reintroduced at the route layer. Access is narrowed inside the hub
+   * and enforced server-side on the detail endpoint instead.
    */
   test('files a report and sees it in their own list', async ({ page }) => {
     const title = `${E2E_TAG} hazard ${Date.now()}`;
@@ -103,10 +102,13 @@ test.describe('Safety — Field_Engineer', () => {
       .not.toHaveURL(/unauthorized/);
     await page.getByRole('button', { name: /Hazard/i }).first().click();
 
-    await page.locator('[name="incident_date"]').fill(new Date().toISOString().slice(0, 10));
-    await page.locator('[name="location"]').fill(title);
-    await page.locator('[name="description"]').fill('Filed by the E2E suite.');
-    await page.locator('[name="severity"]').selectOption('Medium');
+    // Scoped to the form controls: [name="description"] also matches the
+    // document's <meta name="description">.
+    const form = page.locator('form');
+    await form.locator('[name="incident_date"]').fill(new Date().toISOString().slice(0, 10));
+    await form.locator('[name="location"]').fill(title);
+    await form.locator('textarea[name="description"]').fill('Filed by the E2E suite.');
+    await form.locator('select[name="severity"]').selectOption('Medium');
     await page.locator('button[type="submit"]').click();
 
     await expect(page).toHaveURL(/\/safety(\?.*)?$/, { timeout: 20_000 });
