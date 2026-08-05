@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut } from '@/services/api';
+import { apiGet, apiPost, apiPut, apiPatch } from '@/services/api';
 import { SAFETY } from '@/services/endpoints';
 
 export const safetyService = {
@@ -23,8 +23,10 @@ export const safetyService = {
     return apiPut(SAFETY.BY_ID(id), data);
   },
 
-  updateStatus: async (id, status, notes) => {
-    return apiPut(`${SAFETY.BY_ID(id)}/status`, { status, notes });
+  // PATCH, not PUT: safety.routes.js registers this as router.patch, so a PUT
+  // matched no route and 404'd before reaching the handler.
+  updateStatus: async (id, status, resolution) => {
+    return apiPatch(SAFETY.UPDATE_STATUS(id), { status, resolution });
   },
 
   getStats: async () => {
