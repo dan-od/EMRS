@@ -26,10 +26,10 @@ const EXPECTED_LABELS = {
 };
 
 /**
- * KNOWN FAILURE — /jobs renders "A server error occurred" instead of the list;
- * the jobs endpoints return 500, so no job reaches the page and the badge and
- * tracker rendering cannot be observed in a browser at all. The unit tests in
- * jobStatus.test.js still cover the mapping logic itself.
+ * These went unverifiable for a while: /jobs returned 500 because
+ * jobs.queries.js held a copy of the equipment queries, so every job-level
+ * lookup resolved to undefined. With the read path restored, these assert the
+ * badge and tracker output as actually rendered rather than as bundled.
  */
 test.describe('Jobs — status badges', () => {
   test('renders mapped labels, never the raw stored string', async ({ page }) => {

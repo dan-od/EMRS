@@ -1,219 +1,148 @@
 /**
- * Jobs Queries - Equipment Items (Enhanced)
- * Supports: item_type, sourcing workflow, approval flow
+ * Jobs Queries — job-level reads.
+ *
+ * This file previously held a near-copy of equipment.queries.js, so every
+ * queries.jobs.* lookup resolved to undefined and the list, detail and stats
+ * endpoints failed with "Client was passed a null or undefined query". The
+ * job queries had never existed in the repository.
+ *
+ * Read path only. create, update and generateNumber are deliberately NOT
+ * defined here: they are write-path work that needs decisions this file
+ * cannot infer (job_number format, update semantics). Leaving them absent
+ * makes updateJob fail loudly rather than silently running the equipment
+ * UPDATE it used to resolve to.
+ *
+ * Status comparisons go through lower(status::text) because job_status_expanded
+ * carries both TitleCase members (what workflow.queries.js writes) and
+ * SCREAMING_CASE duplicates.
  */
 
-const getByJobId = `
-  SELECT 
-    jei.*,
-    e.name as equipment_name, e.serial_number, e.asset_category, e.type as equipment_type, e.asset_tag,
-    adder.first_name || ' ' || adder.last_name as added_by_name,
-    requester.first_name || ' ' || requester.last_name as requested_by_name,
-    sourcing_user.first_name || ' ' || sourcing_user.last_name as sourcing_by_name,
-    disburser.first_name || ' ' || disburser.last_name as disbursed_by_name,
-    sup_approver.first_name || ' ' || sup_approver.last_name as supervisor_approved_by_name
-  FROM job_equipment_items jei
-  LEFT JOIN equipment e ON jei.equipment_id = e.id
-  LEFT JOIN users adder ON jei.added_by = adder.id
-  LEFT JOIN users requester ON jei.requested_by = requester.id
-  LEFT JOIN users sourcing_user ON jei.sourcing_started_by = sourcing_user.id
-  LEFT JOIN users disburser ON jei.disbursed_by = disburser.id
-  LEFT JOIN users sup_approver ON jei.supervisor_approved_by = sup_approver.id
-  WHERE jei.job_id = $1 
-  ORDER BY jei.item_type ASC, jei.added_at DESC
+// Column list shared by the list views. Kept narrow: the detail query
+// returns the full row, the lists only need what JobCard renders.
+const LIST_COLUMNS = `
+  j.id, j.job_number, j.client, j.location, j.well_name, j.description,
+  j.status, j.priority, j.department,
+  j.start_date, j.end_date, j.expected_end_date,
+  j.supervisor_id, j.created_by, j.created_at, j.updated_at,
+  (SELECT COUNT(*) FROM job_team t
+    WHERE t.job_id = j.id AND t.removed_at IS NULL) AS team_count,
+  (SELECT COUNT(*) FROM job_equipment_items i
+    WHERE i.job_id = j.id) AS equipment_count
 `;
 
-const addInventory = `
-  INSERT INTO job_equipment_items (
-    job_id, source, equipment_id, quantity, priority, notes, added_by,
-    item_type, requested_by, requested_by_role, request_reason
+// $1 status (nullable), $2 search (nullable)
+const LIST_FILTER = `
+  ($1::text IS NULL OR LOWER(j.status::text) = LOWER($1::text))
+  AND (
+    $2::text IS NULL OR
+    j.job_number ILIKE '%' || $2 || '%' OR
+    j.client ILIKE '%' || $2 || '%' OR
+    j.location ILIKE '%' || $2 || '%' OR
+    COALESCE(j.well_name, '') ILIKE '%' || $2 || '%'
   )
-  VALUES ($1, 'INVENTORY', $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-  RETURNING *
 `;
 
-const addClient = `
-  INSERT INTO job_equipment_items (
-    job_id, source, client_equipment_name, client_equipment_description,
-    quantity, priority, notes, added_by, item_type
-  )
-  VALUES ($1, 'CLIENT', $2, $3, $4, $5, $6, $7, $8) 
-  RETURNING *
+const findAll = `
+  SELECT ${LIST_COLUMNS}
+  FROM jobs j
+  WHERE ${LIST_FILTER}
+  ORDER BY j.created_at DESC
+  LIMIT $3 OFFSET $4
 `;
 
-const addNewRequest = `
-  INSERT INTO job_equipment_items (
-    job_id, source, requested_item_name, requested_item_description,
-    requested_item_specs, quantity, priority, notes, added_by,
-    item_type, requested_by, requested_by_role, request_reason, status
-  )
-  VALUES ($1, 'NEW_REQUEST', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
-  RETURNING *
+const countAll = `
+  SELECT COUNT(*)::int AS total
+  FROM jobs j
+  WHERE ${LIST_FILTER}
 `;
 
-const update = `
-  UPDATE job_equipment_items SET 
-    quantity = COALESCE($2, quantity),
-    priority = COALESCE($3, priority), 
-    notes = COALESCE($4, notes), 
-    item_type = COALESCE($5, item_type),
-    updated_at = NOW()
-  WHERE id = $1 RETURNING *
+// A job is "mine" if I am on the team, supervising it, or created it.
+// $1 userId, $2 status (nullable)
+const MY_JOBS_FILTER = `
+  (jt.user_id IS NOT NULL OR j.supervisor_id = $1 OR j.created_by = $1)
+  AND ($2::text IS NULL OR LOWER(j.status::text) = LOWER($2::text))
 `;
 
-const remove = `DELETE FROM job_equipment_items WHERE id = $1 RETURNING *`;
-
-const approveAll = `
-  UPDATE job_equipment_items SET status = 'APPROVED', updated_at = NOW()
-  WHERE job_id = $1 AND status IN ('REQUESTED', 'PENDING_SUPERVISOR')
+const MY_JOBS_JOIN = `
+  LEFT JOIN job_team jt
+    ON jt.job_id = j.id AND jt.user_id = $1 AND jt.removed_at IS NULL
 `;
 
-const disburse = `
-  UPDATE job_equipment_items SET 
-    status = 'DISBURSED', disbursed_at = NOW(),
-    disbursed_by = $2, disbursement_notes = $3, updated_at = NOW()
-  WHERE id = $1 AND source = 'INVENTORY' RETURNING *
+const findMyJobs = `
+  SELECT ${LIST_COLUMNS}, jt.role::text AS my_role
+  FROM jobs j
+  ${MY_JOBS_JOIN}
+  WHERE ${MY_JOBS_FILTER}
+  ORDER BY j.created_at DESC
+  LIMIT $3 OFFSET $4
 `;
 
-const startSourcing = `
-  UPDATE job_equipment_items SET 
-    status = 'SOURCING', sourcing_started_at = NOW(),
-    sourcing_started_by = $2, sourcing_notes = $3,
-    estimated_arrival = $4, updated_at = NOW()
-  WHERE id = $1 AND source = 'NEW_REQUEST' RETURNING *
+const countMyJobs = `
+  SELECT COUNT(*)::int AS total
+  FROM jobs j
+  ${MY_JOBS_JOIN}
+  WHERE ${MY_JOBS_FILTER}
 `;
 
-const itemArrived = `
-  UPDATE job_equipment_items SET 
-    status = 'ARRIVED', arrived_at = NOW(), arrived_received_by = $2,
-    linked_inventory_id = $3, vendor_name = COALESCE($4, vendor_name),
-    purchase_order_number = $5, procurement_cost = $6, updated_at = NOW()
-  WHERE id = $1 AND status = 'SOURCING' RETURNING *
-`;
-
-const disburseArrived = `
-  UPDATE job_equipment_items SET 
-    status = 'DISBURSED', disbursed_at = NOW(), disbursed_by = $2,
-    disbursement_notes = $3, equipment_id = linked_inventory_id, updated_at = NOW()
-  WHERE id = $1 AND status = 'ARRIVED' RETURNING *
-`;
-
-const supervisorApprove = `
-  UPDATE job_equipment_items SET 
-    status = 'APPROVED', supervisor_approved_at = NOW(),
-    supervisor_approved_by = $2, supervisor_approval_notes = $3, updated_at = NOW()
-  WHERE id = $1 AND status = 'PENDING_SUPERVISOR' RETURNING *
-`;
-
-const supervisorReject = `
-  UPDATE job_equipment_items SET 
-    status = 'SUPERVISOR_REJECTED', supervisor_rejected_at = NOW(),
-    supervisor_rejection_reason = $2, updated_at = NOW()
-  WHERE id = $1 AND status = 'PENDING_SUPERVISOR' RETURNING *
-`;
-
-const returnItem = `
-  UPDATE job_equipment_items SET status = $2, returned_at = NOW(),
-    returned_by = $3, return_condition = $4, hours_used = $5, updated_at = NOW()
-  WHERE id = $1 RETURNING *
-`;
-
-const getProgress = `
+const findById = `
   SELECT
-    COUNT(*) FILTER (WHERE source = 'INVENTORY') as total_inventory,
-    COUNT(*) FILTER (WHERE source = 'INVENTORY' AND status IN ('DISBURSED', 'IN_USE', 'RETURNED')) as disbursed_count,
-    COUNT(*) FILTER (WHERE source = 'NEW_REQUEST') as total_requests,
-    COUNT(*) FILTER (WHERE source = 'NEW_REQUEST' AND status = 'SOURCING') as sourcing_count,
-    COUNT(*) FILTER (WHERE source = 'NEW_REQUEST' AND status IN ('ARRIVED', 'DISBURSED')) as procured_count
-  FROM job_equipment_items WHERE job_id = $1
+    j.*,
+    sup.first_name || ' ' || sup.last_name AS supervisor_name,
+    crt.first_name || ' ' || crt.last_name AS created_by_name,
+    apr.first_name || ' ' || apr.last_name AS approved_by_name,
+    sgn.first_name || ' ' || sgn.last_name AS signoff_by_name
+  FROM jobs j
+  LEFT JOIN users sup ON sup.id = j.supervisor_id
+  LEFT JOIN users crt ON crt.id = j.created_by
+  LEFT JOIN users apr ON apr.id = j.approved_by
+  LEFT JOIN users sgn ON sgn.id = j.signoff_by
+  WHERE j.id = $1
 `;
 
-const getPurchasingQueue = `
-  SELECT 
-    jei.*, e.name as equipment_name, e.serial_number, e.asset_category, e.type as equipment_type, e.asset_tag,
-    j.job_number, j.client, j.location, j.start_date, j.priority as job_priority, j.status as job_status,
-    adder.first_name || ' ' || adder.last_name as added_by_name,
-    requester.first_name || ' ' || requester.last_name as requested_by_name,
-    sourcing_user.first_name || ' ' || sourcing_user.last_name as sourcing_by_name
-  FROM job_equipment_items jei
-  JOIN jobs j ON jei.job_id = j.id
-  LEFT JOIN equipment e ON jei.equipment_id = e.id
-  LEFT JOIN users adder ON jei.added_by = adder.id
-  LEFT JOIN users requester ON jei.requested_by = requester.id
-  LEFT JOIN users sourcing_user ON jei.sourcing_started_by = sourcing_user.id
-  WHERE j.status::text IN ('Approved', 'Team_Assigned', 'In_Progress')
-    AND jei.status IN ('APPROVED', 'SOURCING', 'ARRIVED')
-  ORDER BY CASE jei.status WHEN 'ARRIVED' THEN 1 WHEN 'SOURCING' THEN 2 WHEN 'APPROVED' THEN 3 ELSE 4 END,
-    j.priority DESC, j.start_date ASC, jei.priority DESC
-`;
-
-const getPurchasingStats = `
+// Keys match what JobList reads off the stats response.
+// pending_approval is the Team_Assigned state, which is what submitJob writes.
+const getStats = `
   SELECT
-    COUNT(*) FILTER (WHERE jei.status = 'APPROVED' AND jei.source = 'INVENTORY') as pending_disburse,
-    COUNT(*) FILTER (WHERE jei.status = 'SOURCING') as sourcing,
-    COUNT(*) FILTER (WHERE jei.status = 'ARRIVED') as arrived,
-    COUNT(*) FILTER (WHERE jei.status = 'DISBURSED') as out_in_field,
-    COUNT(*) FILTER (WHERE jei.status IN ('RETURNED', 'PENDING_RETURN')) as pending_return,
-    COUNT(*) FILTER (WHERE jei.priority = 'Critical') as critical,
-    COUNT(DISTINCT jei.job_id) as active_jobs
-  FROM job_equipment_items jei
-  JOIN jobs j ON jei.job_id = j.id
-  WHERE j.status::text IN ('Approved', 'Team_Assigned', 'In_Progress', 'Post_Job')
+    COUNT(*) FILTER (WHERE LOWER(status::text) = 'draft')         AS draft,
+    COUNT(*) FILTER (WHERE LOWER(status::text) = 'team_assigned') AS pending_approval,
+    COUNT(*) FILTER (WHERE LOWER(status::text) = 'approved')      AS approved,
+    COUNT(*) FILTER (WHERE LOWER(status::text) = 'in_progress')   AS in_progress,
+    COUNT(*) FILTER (WHERE LOWER(status::text) = 'post_job')      AS post_job,
+    COUNT(*) FILTER (WHERE LOWER(status::text) = 'completed')     AS completed,
+    COUNT(*) FILTER (WHERE LOWER(status::text) = 'cancelled')     AS cancelled,
+    COUNT(*)                                                      AS total
+  FROM jobs
 `;
 
-// Get items pending manager approval (REQUESTED status on active jobs)
-const getPendingManagerApproval = `
-  SELECT 
-    jei.*, e.name as equipment_name, e.serial_number, e.asset_category, e.type as equipment_type, e.asset_tag,
-    j.job_number, j.client, j.location, j.start_date, j.priority as job_priority, j.status as job_status,
-    requester.first_name || ' ' || requester.last_name as requested_by_name,
-    requester.role as requester_role
-  FROM job_equipment_items jei
-  JOIN jobs j ON jei.job_id = j.id
-  LEFT JOIN equipment e ON jei.equipment_id = e.id
-  LEFT JOIN users requester ON jei.requested_by = requester.id
-  WHERE j.status::text IN ('Approved', 'Team_Assigned', 'In_Progress')
-    AND jei.status = 'REQUESTED'
-  ORDER BY j.priority DESC, j.start_date ASC, jei.added_at ASC
+// $1 jobId, $2 userId
+const isTeamMember = `
+  SELECT EXISTS (
+    SELECT 1 FROM job_team
+    WHERE job_id = $1 AND user_id = $2 AND removed_at IS NULL
+  ) AS is_member
 `;
 
-// Manager approve equipment request
-const managerApproveRequest = `
-  UPDATE job_equipment_items 
-  SET status = 'APPROVED', 
-      manager_approved_at = NOW(),
-      manager_approved_by = $2,
-      manager_approval_notes = $3,
-      updated_at = NOW()
-  WHERE id = $1 AND status = 'REQUESTED' 
-  RETURNING *
+// jobs.supervisor_id is authoritative; the job_team role covers members
+// assigned as supervisor without the column being set.
+const isSupervisor = `
+  SELECT EXISTS (
+    SELECT 1 FROM jobs j
+    LEFT JOIN job_team jt
+      ON jt.job_id = j.id AND jt.user_id = $2 AND jt.removed_at IS NULL
+    WHERE j.id = $1 AND (j.supervisor_id = $2 OR jt.role = 'SUPERVISOR')
+  ) AS is_supervisor
 `;
 
-// Manager reject equipment request
-const managerRejectRequest = `
-  UPDATE job_equipment_items 
-  SET status = 'MANAGER_REJECTED', 
-      manager_rejected_at = NOW(),
-      manager_rejected_by = $2,
-      manager_rejection_reason = $3,
-      updated_at = NOW()
-  WHERE id = $1 AND status = 'REQUESTED' 
-  RETURNING *
+const getUserRole = `
+  SELECT role::text AS role
+  FROM job_team
+  WHERE job_id = $1 AND user_id = $2 AND removed_at IS NULL
+  LIMIT 1
 `;
-
-const addHistory = `
-  INSERT INTO job_equipment_history (
-    job_equipment_item_id, job_id, action, previous_status, new_status,
-    performed_by, performed_by_name, performed_by_role, notes, details
-  ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
-`;
-
-const getHistory = `SELECT * FROM job_equipment_history WHERE job_equipment_item_id = $1 ORDER BY created_at DESC`;
 
 module.exports = {
-  getByJobId, addInventory, addClient, addNewRequest, update, remove, approveAll,
-  disburse, startSourcing, itemArrived, disburseArrived, supervisorApprove, supervisorReject,
-  returnItem, getProgress, getPurchasingQueue, getPurchasingStats, 
-  getPendingManagerApproval, managerApproveRequest, managerRejectRequest,
-  addHistory, getHistory
+  findAll, countAll,
+  findMyJobs, countMyJobs,
+  findById, getStats,
+  isTeamMember, isSupervisor, getUserRole,
 };
