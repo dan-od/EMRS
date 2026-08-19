@@ -12,11 +12,25 @@ const logger = require('../../../utils/logger');
 const confirmReturn = async (id, confirmedBy, confirmerName, { notes, verifiedItems = [] } = {}) => {
   
   return await transaction(async (client) => {
+    // Lock first so concurrent replays serialise rather than both restoring
+    // stock. The status check below already blocks a second restore, but it
+    // reports a failure — this returns the success that already happened.
+    const locked = await client.query(
+      'SELECT status, return_confirmed_at FROM requests WHERE id = $1 FOR UPDATE',
+      [id]
+    );
+    if (!locked.rows[0]) throw new Error('Request not found');
+
+    if (locked.rows[0].return_confirmed_at !== null) {
+      const existing = await client.query(queries.findById, [id]);
+      return existing.rows[0];
+    }
+
     const current = await client.query(queries.findById, [id]);
     if (!current.rows[0]) throw new Error('Request not found');
-    
+
     const request = current.rows[0];
-    
+
     if (request.status !== 'Pending_Return' && request.status !== 'Disbursed') {
       throw new Error('Request is not pending return');
     }

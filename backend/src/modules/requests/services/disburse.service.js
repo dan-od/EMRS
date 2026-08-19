@@ -11,11 +11,30 @@ const logger = require('../../../utils/logger');
 const disburse = async (id, disbursedBy, disburserName, { notes, expectedReturnDate, withoutApproval = false, inventoryLinks = [] } = {}) => {
   
   return await transaction(async (client) => {
+    // Lock the row first so two replays of the same disbursement serialise
+    // here instead of both proceeding to decrement stock. Field staff retry
+    // over unreliable links, and a double decrement is silently wrong rather
+    // than loudly broken.
+    const locked = await client.query(
+      'SELECT status FROM requests WHERE id = $1 FOR UPDATE',
+      [id]
+    );
+    if (!locked.rows[0]) throw new Error('Request not found');
+
+    if (locked.rows[0].status === 'Disbursed') {
+      // Already disbursed: return what the first call produced. The user
+      // retried because they saw nothing — an error would be worse than the
+      // success that already happened. Note this also covers withoutApproval,
+      // which skips the status check below entirely.
+      const existing = await client.query(queries.findById, [id]);
+      return existing.rows[0];
+    }
+
     const current = await client.query(queries.findById, [id]);
     if (!current.rows[0]) throw new Error('Request not found');
-    
+
     const request = current.rows[0];
-    
+
     if (!withoutApproval && request.status !== 'Approved' && request.status !== 'On_Hold') {
       throw new Error('Request must be approved before disbursement');
     }

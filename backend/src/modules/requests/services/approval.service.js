@@ -138,6 +138,25 @@ const createWorkOrderFromRequest = async (client, request, approvedBy, user, pur
   try {
     const workOrderService = require('../../maintenance/workOrder.service');
 
+    // A replayed approval must not produce a second work order. The unique
+    // index uniq_maintenance_schedule_request makes that impossible at the
+    // database, but hitting it would surface as an error — so check first and
+    // reuse the work order the earlier call already created.
+    const existing = await client.query(
+      'SELECT id FROM maintenance_schedule WHERE request_id = $1 LIMIT 1',
+      [requestId]
+    );
+    if (existing.rows[0]) {
+      logger.debug('Work order already exists for request, reusing', {
+        requestId, workOrderId: existing.rows[0].id,
+      });
+      await client.query(
+        `UPDATE requests SET work_order_id = $2, updated_at = NOW() WHERE id = $1`,
+        [requestId, existing.rows[0].id]
+      );
+      return;
+    }
+
     // Pass the client so work order is created in same transaction
     const workOrder = await workOrderService.createFromRequest(request, approvedBy, user, purchasingData, client);
 
