@@ -308,7 +308,7 @@ const LinkDisburseModal = ({
             variant="primary"
             onClick={handleSubmit}
             disabled={!selectedInventory || isLoading}
-            loading={isLoading}
+            isLoading={isLoading}
           >
             {showPartial && quantity < requestedQty 
               ? `Disburse ${quantity} & ${sourceRemaining ? 'Source Rest' : 'Close'}` 

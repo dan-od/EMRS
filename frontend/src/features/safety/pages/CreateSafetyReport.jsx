@@ -201,7 +201,7 @@ const CreateSafetyReport = () => {
                   <Button
                     type="submit"
                     variant="danger"
-                    loading={isLoading}
+                    isLoading={isLoading}
                     className="w-full"
                   >
                     Submit Report to Safety Department

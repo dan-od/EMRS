@@ -46,7 +46,7 @@ export const DisbursementCard = memo(({ disbursement, onProcess, isLoading }) =>
                   size="sm"
                   variant="success"
                   onClick={() => onProcess(disbursement.id, 'approve')}
-                  loading={isLoading}
+                  isLoading={isLoading}
                 >
                   <Check className="w-3 h-3" />
                 </Button>
@@ -54,7 +54,7 @@ export const DisbursementCard = memo(({ disbursement, onProcess, isLoading }) =>
                   size="sm"
                   variant="danger"
                   onClick={() => onProcess(disbursement.id, 'reject')}
-                  loading={isLoading}
+                  isLoading={isLoading}
                 >
                   <X className="w-3 h-3" />
                 </Button>

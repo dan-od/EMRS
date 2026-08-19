@@ -117,7 +117,7 @@ const SafetyReportDetail = () => {
                     <Button
                       variant="primary"
                       onClick={() => handleStatusUpdate('In_Progress')}
-                      loading={actionLoading}
+                      isLoading={actionLoading}
                       className="w-full sm:w-auto"
                     >
                       Start Investigation
@@ -127,7 +127,7 @@ const SafetyReportDetail = () => {
                     <Button
                       variant="success"
                       onClick={() => handleStatusUpdate('Resolved')}
-                      loading={actionLoading}
+                      isLoading={actionLoading}
                       className="w-full sm:w-auto"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />

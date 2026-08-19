@@ -116,7 +116,7 @@ export const StatusUpdateModal = ({ jobId, currentStatus, onClose, onSuccess }) 
             variant="primary" 
             onClick={handleSubmit}
             disabled={!newStatus || isLoading || availableTransitions.length === 0}
-            loading={isLoading}
+            isLoading={isLoading}
           >
             Update Status
           </Button>
