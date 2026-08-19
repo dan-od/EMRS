@@ -28,6 +28,15 @@ const create = async (userId, { requestId, itemIndex, itemName, currentReturnDat
     const result = await client.query(queries.create, [
       requestId, itemIndex, itemName, currentReturnDate, requestedReturnDate, reason, userId
     ]);
+
+    if (!result.rows[0]) {
+      // A pending extension already exists for this request line, so this is
+      // a replay. Return what the first call created rather than an error —
+      // the user retried because they never saw the response.
+      const existing = await client.query(queries.findPendingForLine, [requestId, itemIndex]);
+      return existing.rows[0];
+    }
+
     const extension = result.rows[0];
     
     // Mark request as having pending extension

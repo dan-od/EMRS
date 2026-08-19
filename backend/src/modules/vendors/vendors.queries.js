@@ -89,9 +89,16 @@ module.exports = {
     WHERE id = $2
   `,
   
+  // uniq_vendor_reviews_vendor_reviewer allows one review per reviewer per
+  // vendor. Upserting rather than letting the constraint raise means a
+  // replayed rating rewrites the same values (a no-op) instead of returning
+  // a 500, while a reviewer genuinely revising their score still works.
+  // The WHERE clause matches the partial index so Postgres can infer it.
   addReview: `
     INSERT INTO vendor_reviews (vendor_id, rating, review, reviewed_by)
     VALUES ($1, $2, $3, $4)
+    ON CONFLICT (vendor_id, reviewed_by) WHERE reviewed_by IS NOT NULL
+    DO UPDATE SET rating = EXCLUDED.rating, review = EXCLUDED.review
   `,
   
   getPurchaseHistory: `

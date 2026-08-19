@@ -47,6 +47,40 @@ function splitStatements(sql) {
       }
       current += ch;
       i++;
+    } else if (ch === "'" && dollarTag === null) {
+      // Single-quoted literal. A semicolon inside one is data, not a
+      // statement boundary. '' is an escaped quote and does not close.
+      current += ch;
+      i++;
+      while (i < sql.length) {
+        if (sql[i] === "'" && sql[i + 1] === "'") {
+          current += "''";
+          i += 2;
+          continue;
+        }
+        if (sql[i] === "'") {
+          current += "'";
+          i++;
+          break;
+        }
+        current += sql[i];
+        i++;
+      }
+    } else if (ch === '-' && sql[i + 1] === '-' && dollarTag === null) {
+      // Line comment: consume to end of line so a semicolon in prose does
+      // not cut the statement in half.
+      while (i < sql.length && sql[i] !== '\n') {
+        current += sql[i];
+        i++;
+      }
+    } else if (ch === '/' && sql[i + 1] === '*' && dollarTag === null) {
+      // Block comment, same reasoning.
+      while (i < sql.length && !(sql[i] === '*' && sql[i + 1] === '/')) {
+        current += sql[i];
+        i++;
+      }
+      current += sql.slice(i, i + 2);
+      i += 2;
     } else if (ch === ';' && dollarTag === null) {
       // Statement boundary — only valid outside a dollar-quoted block
       current += ch;

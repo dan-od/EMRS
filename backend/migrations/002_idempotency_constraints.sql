@@ -23,9 +23,10 @@ WITH ranked AS (
 )
 UPDATE maintenance_schedule m
 SET request_id = NULL,
-    -- Keep this literal free of semicolons. splitStatements() in
-    -- src/config/migrate.js respects dollar-quoting but not single-quoted
-    -- strings or line comments, so a stray one cuts the statement in half.
+    -- This literal originally had to avoid semicolons: splitStatements() in
+    -- src/config/migrate.js cut statements on any ; including inside strings
+    -- and comments. That is fixed, but the wording is left as-is because this
+    -- migration has already been applied.
     notes = COALESCE(m.notes || E'\n', '')
             || '[migration 002] Detached from request ' || r.request_id
             || ' as a duplicate work order. The earliest work order for that '

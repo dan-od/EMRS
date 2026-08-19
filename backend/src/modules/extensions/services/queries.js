@@ -2,11 +2,27 @@
  * Extensions Service - SQL Queries
  */
 module.exports = {
+  // DO NOTHING, not DO UPDATE: a replay must not overwrite the extension
+  // already awaiting a decision. On conflict this returns no rows and the
+  // caller falls back to findPendingForLine below.
+  // The WHERE clause matches uniq_return_extensions_pending so Postgres can
+  // infer the partial index.
   create: `
-    INSERT INTO return_extensions 
+    INSERT INTO return_extensions
     (request_id, item_index, item_name, current_return_date, requested_return_date, reason, requested_by)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ON CONFLICT (request_id, COALESCE(item_index, -1)) WHERE status = 'Pending'
+    DO NOTHING
     RETURNING *
+  `,
+
+  // Used when create hits the pending-extension constraint, so a retried
+  // request gets back the extension the first call created.
+  findPendingForLine: `
+    SELECT * FROM return_extensions
+    WHERE request_id = $1 AND COALESCE(item_index, -1) = COALESCE($2, -1)
+      AND status = 'Pending'
+    LIMIT 1
   `,
   
   findById: `
