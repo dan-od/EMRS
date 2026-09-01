@@ -73,7 +73,7 @@ jobs:
       - name: Build and start containers
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.HOMELAB_HOST }} \
-            "cd ${{ secrets.DEPLOY_PATH }} && docker compose build && docker compose up -d && docker image prune -f"
+            "cd ${{ secrets.DEPLOY_PATH }} && docker compose build && docker compose up -d --wait && docker image prune -f"
 
       - name: Run migrations
         run: |
