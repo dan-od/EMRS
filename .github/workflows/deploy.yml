@@ -83,4 +83,4 @@ jobs:
       - name: Health check
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.HOMELAB_HOST }} \
-            "docker exec cloudflared wget -qO- http://emrs-nginx/api/health || exit 1"
+            "docker exec emrs-nginx wget -qO- http://127.0.0.1/api/health || exit 1"
